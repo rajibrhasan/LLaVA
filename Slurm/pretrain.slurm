@@ -5,7 +5,7 @@
 #SBATCH --ntasks=1 
 #SBATCH -t 12:00:00 
 #SBATCH -p gpu
-#SBATCH --gres=gpu:a100:4
+#SBATCH --gres=gpu:a40:8
 #SBATCH -N 1 
 #SBATCH --mem=256G
 #SBATCH --constraint=a100_80gb
