@@ -76,7 +76,7 @@ class LlavaMetaModel:
         self.config.mm_vision_select_layer = mm_vision_select_layer
         self.config.mm_vision_select_feature = mm_vision_select_feature
         self.config.mm_patch_merge_type = mm_patch_merge_type
-        self.config.diff_Loss_coef = getattr(model_args, 'diff_Loss_coef', 0.01)
+        self.config.diff_loss_coef = getattr(model_args, 'diff_loss_coef', 0.01)
         self.config.sim_loss_coef = getattr(model_args, 'sim_loss_coef', 0.01)
 
         if getattr(self, 'mm_projector1', None) is None:
