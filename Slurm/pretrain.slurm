@@ -8,7 +8,6 @@
 #SBATCH --gres=gpu:a40:8
 #SBATCH -N 1 
 #SBATCH --mem=256G
-#SBATCH --constraint=a100_80gb
 #SBATCH --output=log/slurm/modality_gap/log-%A-%a.log 
 #SBATCH -J modality_gap
 
