@@ -989,8 +989,6 @@ def train(attn_implementation=None):
     trainer.save_state()
 
     model.config.use_cache = True
-    model.config.sim_loss_coef = model_args.sim_loss_coef
-    model.config.diff_loss_coef = model_args.diff_Loss_coef
 
     if training_args.lora_enable:
         state_dict = get_peft_state_maybe_zero_3(
