@@ -21,6 +21,7 @@ import json
 import logging
 import pathlib
 from typing import Dict, Optional, Sequence, List
+import wandb
 
 import torch
 
@@ -45,6 +46,10 @@ def rank0_print(*args):
     if local_rank == 0:
         print(*args)
 
+def rank0_condition():
+    if local_rank == 0:
+        return True
+    else: return False
 
 from packaging import version
 IS_TOKENIZER_GREATER_THAN_0_14 = version.parse(tokenizers.__version__) >= version.parse('0.14')
@@ -969,6 +974,13 @@ def train(attn_implementation=None):
                     tokenizer=tokenizer,
                     args=training_args,
                     **data_module)
+
+    rank0status = rank0_condition()
+    
+    if rank0status:
+        os.environ["WANDB_API_KEY"] = "<your_api_key>"
+        os.environ["WANDB_PROJECT"] = "<your_project_name>"
+        wandb.init(project=os.environ["WANDB_PROJECT"])
 
     if list(pathlib.Path(training_args.output_dir).glob("checkpoint-*")):
         trainer.train(resume_from_checkpoint=True)
