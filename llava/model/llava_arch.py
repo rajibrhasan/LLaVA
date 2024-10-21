@@ -242,8 +242,8 @@ class LlavaMetaForCausalLM(ABC):
         new_labels = []
         cur_image_idx = 0
 
-        new_input_embeds2 = []
-        new_labels2 = []
+        # new_input_embeds2 = []
+        # new_labels2 = []
 
         #Store image embeddings and text embeddings
         img_embeds1 = []
@@ -276,7 +276,7 @@ class LlavaMetaForCausalLM(ABC):
             cur_new_labels = []
 
 
-            cur_new_labels2 = []
+            # cur_new_labels2 = []
             cur_new_img_embeds1 = []
             cur_new_img_embeds2 = []
             cur_new_text_embeds = []
@@ -294,7 +294,7 @@ class LlavaMetaForCausalLM(ABC):
                     cur_new_img_embeds1.append(cur_image_features1)
                     cur_new_img_embeds2.append(cur_image_features2)
                     cur_new_labels.append(torch.full((cur_image_features1.shape[0],), IGNORE_INDEX, device=cur_labels.device, dtype=cur_labels.dtype))
-                    cur_new_labels2.append(torch.full((cur_image_features2.shape[0],), IGNORE_INDEX, device=cur_labels.device, dtype=cur_labels.dtype))
+                    # cur_new_labels2.append(torch.full((cur_image_features2.shape[0],), IGNORE_INDEX, device=cur_labels.device, dtype=cur_labels.dtype))
 
             cur_new_input_embeds = [x.to(self.device) for x in cur_new_input_embeds]
 
@@ -318,8 +318,8 @@ class LlavaMetaForCausalLM(ABC):
             new_input_embeds.append(cur_new_input_embeds)
             new_labels.append(cur_new_labels)
 
-            new_input_embeds2.append(cur_new_img_embeds2)
-            new_labels2.append(cur_new_labels2)
+            # new_input_embeds2.append(cur_new_img_embeds2)
+            # new_labels2.append(cur_new_labels2)
 
             img_embeds1.append(cur_new_img_embeds1.mean(dim = 0))
             img_embeds2.append(cur_new_img_embeds2.mean(dim = 0))
@@ -333,8 +333,8 @@ class LlavaMetaForCausalLM(ABC):
             new_input_embeds = [x[:tokenizer_model_max_length] for x in new_input_embeds]
             new_labels = [x[:tokenizer_model_max_length] for x in new_labels]
 
-            new_input_embeds2 = [x[:tokenizer_model_max_length] for x in new_input_embeds2]
-            new_labels = [x[:tokenizer_model_max_length] for x in new_labels2]
+            # new_input_embeds2 = [x[:tokenizer_model_max_length] for x in new_input_embeds2]
+            # new_labels2 = [x[:tokenizer_model_max_length] for x in new_labels2]
 
         # Combine them
         max_len = max(x.shape[0] for x in new_input_embeds)
