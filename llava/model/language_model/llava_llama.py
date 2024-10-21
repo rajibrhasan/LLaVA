@@ -74,6 +74,7 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
         return_dict: Optional[bool] = None,
     ) -> Union[Tuple, CausalLMOutputWithPast]:
 
+        print(position_ids)
         if inputs_embeds is None:
             (
                 input_ids,
@@ -110,7 +111,9 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
         diff_loss = self.loss_diff(embeds['img_embeds1'], embeds['img_embeds2']) 
         diff_loss += self.loss_diff(embeds['img_embeds1'], embeds['text_embeds'])
         sim_loss = self.loss_sim(embeds['img_embeds2'], embeds['text_embeds'], 5)
-        outputs['loss'] += self.config.diff_loss_coef * diff_loss.to(device) + self.config.sim_loss_coef*sim_loss.to(device)
+        # outputs['loss'] += self.config.diff_loss_coef * diff_loss.to(device) + self.config.sim_loss_coef*sim_loss.to(device)
+        print(embeds['input_embeds'].shape)
+        print(embeds['labels2'].shape)
 
         return outputs
 
