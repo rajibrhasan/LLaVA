@@ -242,9 +242,6 @@ class LlavaMetaForCausalLM(ABC):
         new_labels = []
         cur_image_idx = 0
 
-        # new_input_embeds2 = []
-        # new_labels2 = []
-
         #Store image embeddings and text embeddings
         img_embeds1 = []
         img_embeds2 = []
@@ -256,7 +253,7 @@ class LlavaMetaForCausalLM(ABC):
                 cur_image_features1 = image_features1[cur_image_idx]
                 cur_image_features2 = image_features2[cur_image_idx]
                 cur_input_embeds_1 = self.get_model().embed_tokens(cur_input_ids)
-                cur_input_embeds = torch.cat([cur_input_embeds_1, cur_image_features1[0:0]], dim=0)
+                cur_input_embeds = torch.cat([cur_input_embeds_1, cur_image_features1[0:0], cur_image_features2[0:0]], dim=0)
                 new_input_embeds.append(cur_input_embeds)
                 new_labels.append(labels[batch_idx])
                 cur_image_idx += 1
@@ -275,8 +272,6 @@ class LlavaMetaForCausalLM(ABC):
             cur_new_input_embeds = []
             cur_new_labels = []
 
-
-            # cur_new_labels2 = []
             cur_new_img_embeds1 = []
             cur_new_img_embeds2 = []
             cur_new_text_embeds = []
@@ -294,10 +289,9 @@ class LlavaMetaForCausalLM(ABC):
                     cur_new_img_embeds1.append(cur_image_features1)
                     cur_new_img_embeds2.append(cur_image_features2)
                     cur_new_labels.append(torch.full((cur_image_features1.shape[0],), IGNORE_INDEX, device=cur_labels.device, dtype=cur_labels.dtype))
-                    # cur_new_labels2.append(torch.full((cur_image_features2.shape[0],), IGNORE_INDEX, device=cur_labels.device, dtype=cur_labels.dtype))
+                    # cur_new_labels.append(torch.full((cur_image_features2.shape[0],), IGNORE_INDEX, device=cur_labels.device, dtype=cur_labels.dtype))
 
             cur_new_input_embeds = [x.to(self.device) for x in cur_new_input_embeds]
-
             cur_new_img_embeds1 = [x.to(self.device) for x in cur_new_img_embeds1]
             cur_new_img_embeds2 = [x.to(self.device) for x in cur_new_img_embeds2]
             cur_new_text_embeds = [x.to(self.device) for x in cur_new_text_embeds]
@@ -318,9 +312,6 @@ class LlavaMetaForCausalLM(ABC):
             new_input_embeds.append(cur_new_input_embeds)
             new_labels.append(cur_new_labels)
 
-            # new_input_embeds2.append(cur_new_img_embeds2)
-            # new_labels2.append(cur_new_labels2)
-
             img_embeds1.append(cur_new_img_embeds1.mean(dim = 0))
             img_embeds2.append(cur_new_img_embeds2.mean(dim = 0))
             text_embeds.append(cur_new_text_embeds.mean(dim = 0))
@@ -332,9 +323,6 @@ class LlavaMetaForCausalLM(ABC):
         if tokenizer_model_max_length is not None:
             new_input_embeds = [x[:tokenizer_model_max_length] for x in new_input_embeds]
             new_labels = [x[:tokenizer_model_max_length] for x in new_labels]
-
-            # new_input_embeds2 = [x[:tokenizer_model_max_length] for x in new_input_embeds2]
-            # new_labels2 = [x[:tokenizer_model_max_length] for x in new_labels2]
 
         # Combine them
         max_len = max(x.shape[0] for x in new_input_embeds)
@@ -370,12 +358,11 @@ class LlavaMetaForCausalLM(ABC):
         embeds  = {
             'img_embeds1': torch.stack(img_embeds1, dim = 0),
             'img_embeds2': torch.stack(img_embeds2, dim = 0),
-            'text_embeds': torch.stack(text_embeds, dim = 0),
-            # 'input_embeds2': torch.stack(new_input_embeds2, dim = 0),
-            # 'labels2': torch.stack(new_labels2, dim = 0)
+            'text_embeds': torch.stack(text_embeds, dim = 0)
         }
 
         
+
         if _labels is None:
             new_labels = None
         else:
