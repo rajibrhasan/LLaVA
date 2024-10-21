@@ -371,12 +371,11 @@ class LlavaMetaForCausalLM(ABC):
             'img_embeds1': torch.stack(img_embeds1, dim = 0),
             'img_embeds2': torch.stack(img_embeds2, dim = 0),
             'text_embeds': torch.stack(text_embeds, dim = 0),
-            'input_embeds2': torch.stack(new_input_embeds2, dim = 0),
-            'labels2': torch.stack(new_labels2, dim = 0)
+            # 'input_embeds2': torch.stack(new_input_embeds2, dim = 0),
+            # 'labels2': torch.stack(new_labels2, dim = 0)
         }
 
         
-
         if _labels is None:
             new_labels = None
         else:
