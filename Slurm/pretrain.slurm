@@ -3,9 +3,9 @@
 #SBATCH -A collabrobogroup
 #SBATCH --array=0
 #SBATCH --ntasks=1 
-#SBATCH -t 20:00:00 
+#SBATCH -t 25:00:00 
 #SBATCH -p gpu
-#SBATCH --gres=gpu:a40:8
+#SBATCH --gres=gpu:a40:6
 #SBATCH -N 1 
 #SBATCH --mem=256G
 #SBATCH --output=log/slurm/modality_gap/log-%A-%a.log 
@@ -13,11 +13,16 @@
 
 export TORCH_HOME=/project/CollabRoboGroup/.cache
 export TRANSFORMERS_CACHE=/project/CollabRoboGroup/.cache
+export WANDB_API_KEY=
 
 module purge
 module load apptainer
 
 PORT=$((29500 + SLURM_JOB_ID % 1000))
+
+job_name="llava-v1.5-7b-pretrain"
+echo "job name: $job_name"
+
 
 apptainer exec --nv /scratch/mi8uu/mrm/sifs/llava_container_v1.sif deepspeed --master_port $PORT llava/train/train_mem.py \
     --deepspeed ./scripts/zero2.json \
@@ -32,7 +37,7 @@ apptainer exec --nv /scratch/mi8uu/mrm/sifs/llava_container_v1.sif deepspeed --m
     --mm_use_im_start_end False \
     --mm_use_im_patch_token False \
     --bf16 True \
-    --output_dir ckpts/llava-v1.5-7b-pretrain \
+    --output_dir ckpts/${job_name} \
     --num_train_epochs 1 \
     --per_device_train_batch_size 16 \
     --per_device_eval_batch_size 4 \
@@ -53,5 +58,7 @@ apptainer exec --nv /scratch/mi8uu/mrm/sifs/llava_container_v1.sif deepspeed --m
     --lazy_preprocess True \
     --diff_loss_coef 0.1 \
     --sim_loss_coef 0.1 \
-    --report_to wandb
+    --report_to wandb \
+    --run_name $job_name \
+
 
