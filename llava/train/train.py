@@ -977,10 +977,10 @@ def train(attn_implementation=None):
 
     rank0status = rank0_condition()
     
-    if rank0status:
-        os.environ["WANDB_API_KEY"] = "<your_api_key>"
-        os.environ["WANDB_PROJECT"] = "Modality_Gap"
-        wandb.init(project=os.environ["WANDB_PROJECT"])
+    # if rank0status:
+    #     os.environ["WANDB_API_KEY"] = "<your_api_key>"
+    #     os.environ["WANDB_PROJECT"] = "Modality_Gap"
+    #     wandb.init(project=os.environ["WANDB_PROJECT"])
 
     if list(pathlib.Path(training_args.output_dir).glob("checkpoint-*")):
         trainer.train(resume_from_checkpoint=True)
