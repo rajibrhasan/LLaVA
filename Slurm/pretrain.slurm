@@ -5,7 +5,7 @@
 #SBATCH --ntasks=1 
 #SBATCH -t 25:00:00 
 #SBATCH -p gpu
-#SBATCH --gres=gpu:a40:8
+#SBATCH --gres=gpu:a40:6
 #SBATCH -N 1 
 #SBATCH --mem=256G
 #SBATCH --output=log/slurm/modality_gap/log-%A-%a.log 
@@ -38,7 +38,9 @@ PORT=$((29500 + SLURM_JOB_ID % 1000))
 
 apptainer exec --nv /scratch/mi8uu/mrm/sifs/llava_container_v1.sif deepspeed --master_port $PORT llava/train/train_mem.py \
     --deepspeed ./scripts/zero2.json \
-    --model_name_or_path liuhaotian/llava-v1.5-7b \
+    --model_name_or_path $llama3_path \
+    --llm_backbone llama_3_1 \
+    --llm_pad_token pad \
     --version plain \
     --data_path $data_train_path \
     --image_folder $images_path \
