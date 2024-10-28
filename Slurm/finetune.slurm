@@ -29,7 +29,7 @@ echo "job name: $job_name"
 
 
 
-apptainer exec --nv /scratch/mi8uu/mrm/sifs/llava_container_v1.sif deepspeed --master_port $PORT llava/train/train_mem.py \
+    apptainer exec --nv /scratch/mi8uu/mrm/sifs/llava_container_v1.sif deepspeed --master_port $PORT llava/train/train_mem.py \
     --deepspeed scripts/zero3.json \
     --model_name_or_path liuhaotian/llava-v1.5-7b \
     --version v1 \

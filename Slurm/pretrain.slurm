@@ -5,7 +5,7 @@
 #SBATCH --ntasks=1 
 #SBATCH -t 25:00:00 
 #SBATCH -p gpu
-#SBATCH --gres=gpu:a40:6
+#SBATCH --gres=gpu:a40:8
 #SBATCH -N 1 
 #SBATCH --mem=256G
 #SBATCH --output=log/slurm/modality_gap/log-%A-%a.log 
@@ -13,24 +13,36 @@
 
 export TORCH_HOME=/project/CollabRoboGroup/.cache
 export TRANSFORMERS_CACHE=/project/CollabRoboGroup/.cache
+export WANDB_PROJECT=Modality_Gap
+export TOKENIZER_PATH=aimagelab/LLaVA_MORE-llama_3_1-8B-finetuning
+export HF_HOME=
 export WANDB_API_KEY=
+
 
 module purge
 module load apptainer
 
+epochs=1
+llama3_path=meta-llama/Meta-Llama-3-8B-Instruct
+images_path=/scratch/mi8uu/mrm/LLaVA/playground/data/LLaVA-Pretrain/images
+data_train_path=/scratch/mi8uu/mrm/LLaVA/playground/data/LLaVA-Pretrain/blip_laion_cc_sbu_558k.json
+vision_tower=openai/clip-vit-large-patch14-336
+
+job_name="llava-llama-pretrain"
+echo "job name: $job_name"
+
 PORT=$((29500 + SLURM_JOB_ID % 1000))
 
-job_name="llava-v1.5-7b-pretrain"
-echo "job name: $job_name"
+
 
 
 apptainer exec --nv /scratch/mi8uu/mrm/sifs/llava_container_v1.sif deepspeed --master_port $PORT llava/train/train_mem.py \
     --deepspeed ./scripts/zero2.json \
     --model_name_or_path liuhaotian/llava-v1.5-7b \
     --version plain \
-    --data_path /scratch/mi8uu/mrm/LLaVA/playground/data/LLaVA-Pretrain/blip_laion_cc_sbu_558k.json \
-    --image_folder /scratch/mi8uu/mrm/LLaVA/playground/data/LLaVA-Pretrain/images \
-    --vision_tower openai/clip-vit-large-patch14-336 \
+    --data_path $data_train_path \
+    --image_folder $images_path \
+    --vision_tower $vision_tower \
     --mm_projector_type mlp2x_gelu \
     --tune_mm_mlp_adapter True \
     --mm_vision_select_layer -2 \
@@ -56,8 +68,9 @@ apptainer exec --nv /scratch/mi8uu/mrm/sifs/llava_container_v1.sif deepspeed --m
     --gradient_checkpointing True \
     --dataloader_num_workers 4 \
     --lazy_preprocess True \
-    --diff_loss_coef 0.1 \
     --sim_loss_coef 0.1 \
+    --diff_loss_coef 100 \
+    --sim_loss_coef 0.0 \
     --report_to wandb \
     --run_name $job_name \
 
