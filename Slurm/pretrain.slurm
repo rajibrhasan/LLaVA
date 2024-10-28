@@ -23,7 +23,7 @@ module purge
 module load apptainer
 
 epochs=1
-llama3_path=meta-llama/Meta-Llama-3-8B-Instruct
+llama3_path=meta-llama/Llama-3.1-8B-Instruct
 images_path=/scratch/mi8uu/mrm/LLaVA/playground/data/LLaVA-Pretrain/images
 data_train_path=/scratch/mi8uu/mrm/LLaVA/playground/data/LLaVA-Pretrain/blip_laion_cc_sbu_558k.json
 vision_tower=openai/clip-vit-large-patch14-336
