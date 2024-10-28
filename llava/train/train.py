@@ -68,6 +68,8 @@ class ModelArguments:
     s2: bool = field(default=False)
     s2_scales: Optional[str] = field(default=None)
     siglip: bool = field(default=False)
+    diff_loss_coef: Optional[float] = field(default=0.01)
+    sim_loss_coef: Optional[float] = field(default=0.01)
 
 
 @dataclass
