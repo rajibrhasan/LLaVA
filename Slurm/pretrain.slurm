@@ -6,15 +6,10 @@
 #SBATCH -t 25:00:00 
 #SBATCH -p gpu
 #SBATCH --gres=gpu:a40:6
-#SBATCH --cpus-per-task=1
 #SBATCH -N 1 
 #SBATCH --mem=256G
 #SBATCH --output=log/slurm/modality_gap/log-%A-%a.log 
 #SBATCH -J modality_gap
-
-module load gcc openmpi
-
-export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK
 
 export TORCH_HOME=/project/CollabRoboGroup/.cache
 export TRANSFORMERS_CACHE=/project/CollabRoboGroup/.cache
