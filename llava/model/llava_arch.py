@@ -285,11 +285,11 @@ class LlavaMetaForCausalLM(ABC):
                     cur_image_features2 = image_features2[cur_image_idx]
                     cur_image_idx += 1
                     cur_new_input_embeds.append(cur_image_features1)
-                    # cur_new_input_embeds.append(cur_image_features2)
+                    cur_new_input_embeds.append(cur_image_features2)
                     cur_new_img_embeds1.append(cur_image_features1)
                     cur_new_img_embeds2.append(cur_image_features2)
                     cur_new_labels.append(torch.full((cur_image_features1.shape[0],), IGNORE_INDEX, device=cur_labels.device, dtype=cur_labels.dtype))
-                    # cur_new_labels.append(torch.full((cur_image_features2.shape[0],), IGNORE_INDEX, device=cur_labels.device, dtype=cur_labels.dtype))
+                    cur_new_labels.append(torch.full((cur_image_features2.shape[0],), IGNORE_INDEX, device=cur_labels.device, dtype=cur_labels.dtype))
 
             cur_new_input_embeds = [x.to(self.device) for x in cur_new_input_embeds]
             cur_new_img_embeds1 = [x.to(self.device) for x in cur_new_img_embeds1]
