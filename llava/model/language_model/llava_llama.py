@@ -94,7 +94,6 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
                 image_sizes
             )
         
-        print('Input embeds shape: ', inputs_embeds.shape)
 
         outputs =  super().forward(
             input_ids=input_ids,
@@ -110,11 +109,11 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
         )
 
         device = outputs['loss'].device
-        diff_loss = self.loss_diff(embeds['img_embeds1'], embeds['img_embeds2']) 
-        diff_loss += self.loss_diff(embeds['img_embeds2'], embeds['text_embeds'])
-        sim_loss = self.loss_sim(embeds['img_embeds2'], embeds['text_embeds'], 5)
-        outputs['loss'] += self.config.diff_loss_coef * diff_loss.to(device)
-        
+        if embeds is not None:
+            diff_loss = self.loss_diff(embeds['img_embeds1'], embeds['img_embeds2']) 
+            diff_loss += self.loss_diff(embeds['img_embeds2'], embeds['text_embeds'])
+            sim_loss = self.loss_sim(embeds['img_embeds1'], embeds['text_embeds'], 5)
+            outputs['loss'] += self.config.diff_loss_coef * diff_loss.to(device)
         return outputs
 
     @torch.no_grad()

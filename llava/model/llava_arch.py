@@ -355,11 +355,16 @@ class LlavaMetaForCausalLM(ABC):
                     position_ids[i, :cur_len] = torch.arange(0, cur_len, dtype=position_ids.dtype, device=position_ids.device)
 
         new_input_embeds = torch.stack(new_input_embeds_padded, dim=0)
-        embeds  = {
-            'img_embeds1': torch.stack(img_embeds1, dim = 0),
-            'img_embeds2': torch.stack(img_embeds2, dim = 0),
-            'text_embeds': torch.stack(text_embeds, dim = 0)
-        }
+
+        if len(img_embeds1) == 0:
+            embeds = None
+
+        else:
+            embeds  = {
+                'img_embeds1': torch.stack(img_embeds1, dim = 0),
+                'img_embeds2': torch.stack(img_embeds2, dim = 0),
+                'text_embeds': torch.stack(text_embeds, dim = 0)
+            }
 
         
 
