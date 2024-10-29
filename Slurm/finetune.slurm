@@ -7,6 +7,7 @@
 #SBATCH -p gpu
 #SBATCH --gres=gpu:a100:4
 #SBATCH -N 1 
+#SBATCH --constraint=a100_80gb
 #SBATCH --mem=256G
 #SBATCH --output=log/slurm/modality_gap/log-%A-%a.log 
 #SBATCH -J modality_gap
