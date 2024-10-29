@@ -53,7 +53,7 @@ apptainer exec --nv /scratch/mi8uu/mrm/sifs/llava_container_v1.sif deepspeed --m
     --bf16 True \
     --output_dir ckpts/${job_name} \
     --num_train_epochs 1 \
-    --per_device_train_batch_size 16 \
+    --per_device_train_batch_size 8 \
     --per_device_eval_batch_size 4 \
     --gradient_accumulation_steps 2 \
     --evaluation_strategy "no" \
@@ -72,7 +72,6 @@ apptainer exec --nv /scratch/mi8uu/mrm/sifs/llava_container_v1.sif deepspeed --m
     --lazy_preprocess True \
     --sim_loss_coef 0.1 \
     --diff_loss_coef 100 \
-    --sim_loss_coef 0.0 \
     --report_to wandb \
     --run_name $job_name \
 
