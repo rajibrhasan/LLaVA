@@ -368,7 +368,10 @@ class LlavaMetaForCausalLM(ABC):
             text_embeds.append(cur_new_text_embeds.mean(dim = 0))
 
 
-
+        attention_mask_dtype = attention_mask.dtype
+        attention_mask_device = attention_mask.device
+        position_ids_dtype = position_ids.dtype
+        position_ids_device = position_ids.device
         # Truncate sequences to max length as image embeddings can make the sequence longer
         tokenizer_model_max_length = getattr(self.config, 'tokenizer_model_max_length', None)
         if tokenizer_model_max_length is not None:
@@ -408,13 +411,13 @@ class LlavaMetaForCausalLM(ABC):
         #             attention_mask[i, :cur_len] = True
         #             position_ids[i, :cur_len] = torch.arange(0, cur_len, dtype=position_ids.dtype, device=position_ids.device)
 
-        new_input_embeds, new_labels_padded, attention_mask, position_ids = self.combine_input_embeds(new_input_embeds, new_labels, attention_mask.dtype, attention_mask.device, position_ids.dtype, position_ids.device)
+        new_input_embeds, new_labels_padded, attention_mask, position_ids = self.combine_input_embeds(new_input_embeds, new_labels, attention_mask_dtype, attention_mask_device, position_ids_dtype, position_ids_device)
 
         if len(img_embeds1) == 0:
             embeds = None
 
         else:
-            new_input_embeds2, new_labels_padded2, attention_mask2, position_ids2 = self.combine_input_embeds(new_input_embeds2, new_labels2, attention_mask.dtype, attention_mask.device, position_ids.dtype, position_ids.device)
+            new_input_embeds2, new_labels_padded2, attention_mask2, position_ids2 = self.combine_input_embeds(new_input_embeds2, new_labels2, attention_mask_dtype, attention_mask_device, position_ids_dtype, position_ids_device)
             embeds  = {
                 'img_embeds1': torch.stack(img_embeds1, dim = 0),
                 'img_embeds2': torch.stack(img_embeds2, dim = 0),
