@@ -184,12 +184,52 @@ class LlavaMetaForCausalLM(ABC):
                     ), dim=0)
             new_image_features.append(image_feature)
         return new_image_features
-          
+
+    def combine_input_embeds(self, new_input_embeds, new_labels, attention_mask_dtype, attention_mask_device, position_ids_dtype, position_ids_device):
+        max_len = max(x.shape[0] for x in new_input_embeds)
+        batch_size = len(new_input_embeds)
+
+        new_input_embeds_padded = []
+        new_labels_padded = torch.full((batch_size, max_len), IGNORE_INDEX, dtype=new_labels[0].dtype, device=new_labels[0].device)
+        attention_mask = torch.zeros((batch_size, max_len), dtype=attention_mask_dtype, device=attention_mask_device)
+        position_ids = torch.zeros((batch_size, max_len), dtype=position_ids_dtype, device=position_ids_device)
+
+        for i, (cur_new_embed, cur_new_labels) in enumerate(zip(new_input_embeds, new_labels)):
+            cur_len = cur_new_embed.shape[0]
+            if getattr(self.config, 'tokenizer_padding_side', 'right') == "left":
+                new_input_embeds_padded.append(torch.cat((
+                    torch.zeros((max_len - cur_len, cur_new_embed.shape[1]), dtype=cur_new_embed.dtype, device=cur_new_embed.device),
+                    cur_new_embed
+                ), dim=0))
+                if cur_len > 0:
+                    new_labels_padded[i, -cur_len:] = cur_new_labels
+                    attention_mask[i, -cur_len:] = True
+                    position_ids[i, -cur_len:] = torch.arange(0, cur_len, dtype=position_ids.dtype, device=position_ids.device)
+            else:
+                new_input_embeds_padded.append(torch.cat((
+                    cur_new_embed,
+                    torch.zeros((max_len - cur_len, cur_new_embed.shape[1]), dtype=cur_new_embed.dtype, device=cur_new_embed.device)
+                ), dim=0))
+                if cur_len > 0:
+                    new_labels_padded[i, :cur_len] = cur_new_labels
+                    attention_mask[i, :cur_len] = True
+                    position_ids[i, :cur_len] = torch.arange(0, cur_len, dtype=position_ids.dtype, device=position_ids.device)
+
+        new_input_embeds = torch.stack(new_input_embeds_padded, dim=0)
+
+        return new_input_embeds, new_labels_padded, attention_mask, position_ids
+
 
     def prepare_inputs_labels_for_multimodal(
         self, input_ids, position_ids, attention_mask, past_key_values, labels,
         images, image_sizes=None
     ):
+        print('Input ids: ', input_ids)
+        print('Position ids: ', position_ids)
+        print('Attention mask: ', attention_mask)
+        print('Past key values: ', past_key_values)
+        print('Labels: ', labels)
+
         vision_tower = self.get_vision_tower()
         if vision_tower is None or images is None or input_ids.shape[1] == 1:
             return input_ids, position_ids, attention_mask, past_key_values, None, labels, None
@@ -242,6 +282,12 @@ class LlavaMetaForCausalLM(ABC):
         new_labels = []
         cur_image_idx = 0
 
+        #Inputs from modality specific image features
+
+        new_inputs_embeds2 = []
+        new_labels2 = []
+        
+
         #Store image embeddings and text embeddings
         img_embeds1 = []
         img_embeds2 = []
@@ -271,6 +317,7 @@ class LlavaMetaForCausalLM(ABC):
             cur_input_embeds_no_im = torch.split(cur_input_embeds, split_sizes, dim=0)
             cur_new_input_embeds = []
             cur_new_labels = []
+            cur_new_labels2  = []
 
             cur_new_img_embeds1 = []
             cur_new_img_embeds2 = []
@@ -285,11 +332,11 @@ class LlavaMetaForCausalLM(ABC):
                     cur_image_features2 = image_features2[cur_image_idx]
                     cur_image_idx += 1
                     cur_new_input_embeds.append(cur_image_features1)
-                    cur_new_input_embeds.append(cur_image_features2)
+                    # cur_new_input_embeds.append(cur_image_features2)
                     cur_new_img_embeds1.append(cur_image_features1)
                     cur_new_img_embeds2.append(cur_image_features2)
                     cur_new_labels.append(torch.full((cur_image_features1.shape[0],), IGNORE_INDEX, device=cur_labels.device, dtype=cur_labels.dtype))
-                    cur_new_labels.append(torch.full((cur_image_features2.shape[0],), IGNORE_INDEX, device=cur_labels.device, dtype=cur_labels.dtype))
+                    cur_new_labels2.append(torch.full((cur_image_features2.shape[0],), IGNORE_INDEX, device=cur_labels.device, dtype=cur_labels.dtype))
 
             cur_new_input_embeds = [x.to(self.device) for x in cur_new_input_embeds]
             cur_new_img_embeds1 = [x.to(self.device) for x in cur_new_img_embeds1]
@@ -312,6 +359,10 @@ class LlavaMetaForCausalLM(ABC):
             new_input_embeds.append(cur_new_input_embeds)
             new_labels.append(cur_new_labels)
 
+            new_input_embeds2.append(cur_new_img_embeds2)
+            new_labels2.append(cur_new_labels2)
+
+
             img_embeds1.append(cur_new_img_embeds1.mean(dim = 0))
             img_embeds2.append(cur_new_img_embeds2.mean(dim = 0))
             text_embeds.append(cur_new_text_embeds.mean(dim = 0))
@@ -324,46 +375,55 @@ class LlavaMetaForCausalLM(ABC):
             new_input_embeds = [x[:tokenizer_model_max_length] for x in new_input_embeds]
             new_labels = [x[:tokenizer_model_max_length] for x in new_labels]
 
+            new_input_embeds2  = [x[:tokenizer_model_max_length] for x in new_input_embeds2]
+            new_labels2 = [x[:tokenizer_model_max_length] for x in new_labels2]
+
         # Combine them
-        max_len = max(x.shape[0] for x in new_input_embeds)
-        batch_size = len(new_input_embeds)
+        # max_len = max(x.shape[0] for x in new_input_embeds)
+        # batch_size = len(new_input_embeds)
 
-        new_input_embeds_padded = []
-        new_labels_padded = torch.full((batch_size, max_len), IGNORE_INDEX, dtype=new_labels[0].dtype, device=new_labels[0].device)
-        attention_mask = torch.zeros((batch_size, max_len), dtype=attention_mask.dtype, device=attention_mask.device)
-        position_ids = torch.zeros((batch_size, max_len), dtype=position_ids.dtype, device=position_ids.device)
+        # new_input_embeds_padded = []
+        # new_labels_padded = torch.full((batch_size, max_len), IGNORE_INDEX, dtype=new_labels[0].dtype, device=new_labels[0].device)
+        # attention_mask = torch.zeros((batch_size, max_len), dtype=attention_mask.dtype, device=attention_mask.device)
+        # position_ids = torch.zeros((batch_size, max_len), dtype=position_ids.dtype, device=position_ids.device)
 
-        for i, (cur_new_embed, cur_new_labels) in enumerate(zip(new_input_embeds, new_labels)):
-            cur_len = cur_new_embed.shape[0]
-            if getattr(self.config, 'tokenizer_padding_side', 'right') == "left":
-                new_input_embeds_padded.append(torch.cat((
-                    torch.zeros((max_len - cur_len, cur_new_embed.shape[1]), dtype=cur_new_embed.dtype, device=cur_new_embed.device),
-                    cur_new_embed
-                ), dim=0))
-                if cur_len > 0:
-                    new_labels_padded[i, -cur_len:] = cur_new_labels
-                    attention_mask[i, -cur_len:] = True
-                    position_ids[i, -cur_len:] = torch.arange(0, cur_len, dtype=position_ids.dtype, device=position_ids.device)
-            else:
-                new_input_embeds_padded.append(torch.cat((
-                    cur_new_embed,
-                    torch.zeros((max_len - cur_len, cur_new_embed.shape[1]), dtype=cur_new_embed.dtype, device=cur_new_embed.device)
-                ), dim=0))
-                if cur_len > 0:
-                    new_labels_padded[i, :cur_len] = cur_new_labels
-                    attention_mask[i, :cur_len] = True
-                    position_ids[i, :cur_len] = torch.arange(0, cur_len, dtype=position_ids.dtype, device=position_ids.device)
+        # for i, (cur_new_embed, cur_new_labels) in enumerate(zip(new_input_embeds, new_labels)):
+        #     cur_len = cur_new_embed.shape[0]
+        #     if getattr(self.config, 'tokenizer_padding_side', 'right') == "left":
+        #         new_input_embeds_padded.append(torch.cat((
+        #             torch.zeros((max_len - cur_len, cur_new_embed.shape[1]), dtype=cur_new_embed.dtype, device=cur_new_embed.device),
+        #             cur_new_embed
+        #         ), dim=0))
+        #         if cur_len > 0:
+        #             new_labels_padded[i, -cur_len:] = cur_new_labels
+        #             attention_mask[i, -cur_len:] = True
+        #             position_ids[i, -cur_len:] = torch.arange(0, cur_len, dtype=position_ids.dtype, device=position_ids.device)
+        #     else:
+        #         new_input_embeds_padded.append(torch.cat((
+        #             cur_new_embed,
+        #             torch.zeros((max_len - cur_len, cur_new_embed.shape[1]), dtype=cur_new_embed.dtype, device=cur_new_embed.device)
+        #         ), dim=0))
+        #         if cur_len > 0:
+        #             new_labels_padded[i, :cur_len] = cur_new_labels
+        #             attention_mask[i, :cur_len] = True
+        #             position_ids[i, :cur_len] = torch.arange(0, cur_len, dtype=position_ids.dtype, device=position_ids.device)
 
-        new_input_embeds = torch.stack(new_input_embeds_padded, dim=0)
+        new_input_embeds, new_labels_padded, attention_mask, position_ids = self.combine_input_embeds(new_input_embeds, new_labels, attention_mask.dtype, attention_mask.device, position_ids.dtype, position_ids.device)
 
         if len(img_embeds1) == 0:
             embeds = None
 
         else:
+            new_input_embeds2, new_labels_padded2, attention_mask2, position_ids2 = self.combine_input_embeds(new_input_embeds2, new_labels2, attention_mask.dtype, attention_mask.device, position_ids.dtype, position_ids.device)
             embeds  = {
                 'img_embeds1': torch.stack(img_embeds1, dim = 0),
                 'img_embeds2': torch.stack(img_embeds2, dim = 0),
-                'text_embeds': torch.stack(text_embeds, dim = 0)
+                'text_embeds': torch.stack(text_embeds, dim = 0),
+                'new_input_embeds2': torch.stack(new_input_embeds2, dim = 0),
+                'new_labels2': new_labels_padded2,
+                'attention_mask2': attention_mask2,
+                'position_ids2': position_ids2,
+                'past_key_values': None,
             }
 
         
