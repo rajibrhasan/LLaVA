@@ -108,7 +108,7 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
         print('Attention mask: ', embeds['attention_mask2'])
         print('Past key values: ', embeds['past_key_values'])
         print('Labels: ',embeds['new_labels2'])
-        print('Input embeds shape: ', embeds['new_inputs_embeds2.shape'])
+        print('Input embeds shape: ', embeds['new_inputs_embeds2'].shape)
 
 
         
