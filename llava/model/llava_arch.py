@@ -284,7 +284,7 @@ class LlavaMetaForCausalLM(ABC):
 
         #Inputs from modality specific image features
 
-        new_inputs_embeds2 = []
+        new_input_embeds2 = []
         new_labels2 = []
         
 
