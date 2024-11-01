@@ -424,7 +424,7 @@ class LlavaMetaForCausalLM(ABC):
                 'img_embeds1': torch.stack(img_embeds1, dim = 0),
                 'img_embeds2': torch.stack(img_embeds2, dim = 0),
                 'text_embeds': torch.stack(text_embeds, dim = 0),
-                'new_input_embeds2': torch.stack(new_input_embeds2, dim = 0),
+                'new_input_embeds2': new_input_embeds2,
                 'new_labels2': new_labels_padded2,
                 'attention_mask2': attention_mask2,
                 'position_ids2': position_ids2,
