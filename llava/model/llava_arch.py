@@ -347,6 +347,8 @@ class LlavaMetaForCausalLM(ABC):
             cur_new_input_embeds = torch.cat(cur_new_input_embeds)
             cur_new_labels = torch.cat(cur_new_labels)
 
+            cur_new_labels2 = torch.cat(cur_new_labels2)
+
             cur_new_img_embeds1 = torch.cat(cur_new_img_embeds1)
             cur_new_img_embeds2 = torch.cat(cur_new_img_embeds2)
             cur_new_text_embeds = torch.cat(cur_new_text_embeds)
