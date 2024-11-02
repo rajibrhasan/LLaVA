@@ -31,7 +31,7 @@ from ..losses import *
 def orthogonal_loss_matrix(inputs1, inputs2):
     dot_product = (inputs1 * inputs2).sum(dim=-1)
     # Minimize the absolute value of the dot product
-    loss = torch.abs(dot_product).mean()
+    loss = dot_product.pow(2).mean()
 
     return loss
 
