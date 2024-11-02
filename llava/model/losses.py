@@ -53,9 +53,6 @@ class DiffLoss(nn.Module):
         super(DiffLoss, self).__init__()
 
     def forward(self, input1, input2):
-        print('Input1 shape: ', input1.shape)
-        print('input2 shape: ', input2.shape)
-
         # Zero mean
         input1_mean = torch.mean(input1, dim=0, keepdims=True)
         input2_mean = torch.mean(input2, dim=0, keepdims=True)
