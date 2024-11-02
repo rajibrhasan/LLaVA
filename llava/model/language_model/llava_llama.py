@@ -29,13 +29,10 @@ from ..losses import *
 
 
 def orthogonal_loss_matrix(inputs1, inputs2):
-    batch_size = input1.size(0)
-    input1 = input1.view(batch_size, -1)
-    input2 = input2.view(batch_size, -1)
-    # Calculate the Gram matrix (similarity matrix) between features
-    gram_matrix = torch.mm(inputs1.T, inputs2)
-    # Compute Frobenius norm of Gram matrix (encourages orthogonality)
-    loss = torch.norm(gram_matrix, p='fro')
+    dot_product = (inputs1 * inputs2).sum(dim=-1)
+    # Minimize the absolute value of the dot product
+    loss = torch.abs(dot_product).mean()
+
     return loss
 
 class LlavaConfig(LlamaConfig):
@@ -120,7 +117,7 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
 
         device = outputs['loss'].device
         if embeds is not None:
-            diff_loss = self.loss_diff(embeds['img_embeds1'], embeds['img_embeds2']) 
+            diff_loss = orthogonal_loss_matrix(embeds['img_embeds1'], embeds['img_embeds2']) 
             # diff_loss += self.loss_diff(embeds['img_embeds2'], embeds['text_embeds'])
             # sim_loss = self.loss_sim(embeds['img_embeds2'], embeds['text_embeds'], 5)
             outputs['loss'] += self.config.diff_loss_coef * diff_loss.to(device)

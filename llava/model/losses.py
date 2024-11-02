@@ -54,7 +54,7 @@ class DiffLoss(nn.Module):
 
     def forward(self, input1, input2):
 
-        print('Input1 shape: ',input1.shape)
+        print('Input1 shape: ', input1.shape)
         print('Input2 shape : ', input2.shape)
 
         batch_size = input1.size(0)
@@ -75,8 +75,6 @@ class DiffLoss(nn.Module):
         input2_l2 = input2.div(input2_l2_norm.expand_as(input2) + 1e-6)
 
         diff_loss = (input1_l2.t().mm(input2_l2)).pow(2)
-        print('Diff Loss shape: ', diff_loss.shape)
-
         diff_loss = torch.mean(diff_loss)
 
         return diff_loss
