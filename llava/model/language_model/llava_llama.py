@@ -27,6 +27,13 @@ from transformers.generation.utils import GenerateOutput
 from ..llava_arch import LlavaMetaModel, LlavaMetaForCausalLM
 from ..losses import *
 
+local_rank = None
+
+# use this function instead the standard print, to avoid verbose output in the logs
+def rank0_print(*args):
+    if local_rank == 0:
+        print(*args)
+
 
 class LlavaConfig(LlamaConfig):
     model_type = "llava_llama"
@@ -94,24 +101,37 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
                 image_sizes
             )
         
-        print('==============================Text + Img Features1=========================')
-        print('Input ids: ', input_ids)
-        print('Position_ids: ', position_ids)
-        print('Attention mask: ', attention_mask)
-        print('Past key values: ', past_key_values)
-        print('Labels: ',labels)
-        print('Input embeds shape: ', inputs_embeds.shape)
+        rank0_print('==============================Text + Img Features1=========================')
+        rank0_print('Input ids: ', input_ids)
+        if position_ids is not None:
+            rank0_print('Position_ids shape: ', position_ids.shape)
+        rank0_print('Position_ids: ', position_ids)
+        if attention_mask is not None:
+            rank0_print('Attention mask shape: ', attention_mask.shape)
+        rank0_print('Attention mask: ', attention_mask)
+        if past_key_values is not None:
+            rank0_print('Past key values shape: ', past_key_values.shape)
+        rank0_print('Past key values: ', past_key_values)
+        if labels is not None:
+            rank0_print('Labels shape: ', labels.shape)
+        rank0_print('Labels: ',labels)
+        rank0_print('Input embeds shape: ', inputs_embeds.shape)
 
-        print('==============================Img Features2=========================')
-        print('Input ids: ', input_ids)
-        print('Position_ids: ', embeds['position_ids2'])
-        print('Attention mask: ', embeds['attention_mask2'])
-        print('Past key values: ', embeds['past_key_values'])
-        print('Labels: ',embeds['new_labels2'])
-        print('Input embeds shape: ', embeds['new_input_embeds2'].shape)
-
-
-        
+        rank0_print('==============================Img Features2=========================')
+        rank0_print('Input ids: ', input_ids)
+        if embeds['position_ids2'] is not None:
+            rank0_print('Position ids shape: ', embeds['position_ids2'].shape)
+        rank0_print('Position_ids: ', embeds['position_ids2'])
+        if embeds['attention_mask2'] is not None:
+            rank0_print('Attention mask shape: ', embeds['attention_mask2'].shape)
+        rank0_print('Attention mask: ', embeds['attention_mask2'])
+        if embeds['past_key_values'] is not None:
+            rank0_print('Past key values shape: ', embeds['past_key_values'].shape)
+        rank0_print('Past key values: ', embeds['past_key_values'])
+        if embeds['new_labels2'] is not None:
+            rank0_print('New labels 2 shape: ', embeds['new_labels2'].shape)
+        rank0_print('Labels: ', embeds['new_labels2'])
+        rank0_print('Input embeds shape: ', embeds['new_input_embeds2'].shape)
 
         outputs =  super().forward(
             input_ids=input_ids,

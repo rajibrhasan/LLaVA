@@ -224,11 +224,6 @@ class LlavaMetaForCausalLM(ABC):
         self, input_ids, position_ids, attention_mask, past_key_values, labels,
         images, image_sizes=None
     ):
-        print('Input ids: ', input_ids)
-        print('Position ids: ', position_ids)
-        print('Attention mask: ', attention_mask)
-        print('Past key values: ', past_key_values)
-        print('Labels: ', labels)
 
         vision_tower = self.get_vision_tower()
         if vision_tower is None or images is None or input_ids.shape[1] == 1:
@@ -420,6 +415,11 @@ class LlavaMetaForCausalLM(ABC):
 
         else:
             new_input_embeds2, new_labels_padded2, attention_mask2, position_ids2 = self.combine_input_embeds(new_input_embeds2, new_labels2, attention_mask_dtype, attention_mask_device, position_ids_dtype, position_ids_device)
+            new_labels_padded2 = new_labels_padded2 if _labels is not None else None
+            attention_mask2 = attention_mask2.to(dtype = _attention_mask.dtype) if _attention_mask is not None else None
+            position_ids2 = position_ids2 if _position_ids is not None else None
+
+
             embeds  = {
                 'img_embeds1': torch.stack(img_embeds1, dim = 0),
                 'img_embeds2': torch.stack(img_embeds2, dim = 0),
@@ -428,10 +428,9 @@ class LlavaMetaForCausalLM(ABC):
                 'new_labels2': new_labels_padded2,
                 'attention_mask2': attention_mask2,
                 'position_ids2': position_ids2,
-                'past_key_values': None,
+                'past_key_values': past_key_values
             }
-
-        
+  
 
         if _labels is None:
             new_labels = None
