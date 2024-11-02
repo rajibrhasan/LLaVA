@@ -27,7 +27,7 @@ from transformers.generation.utils import GenerateOutput
 from ..llava_arch import LlavaMetaModel, LlavaMetaForCausalLM
 from ..losses import *
 
-local_rank = None
+local_rank = 0
 
 # use this function instead the standard print, to avoid verbose output in the logs
 def rank0_print(*args):
