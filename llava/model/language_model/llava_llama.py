@@ -117,7 +117,7 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
 
         device = outputs['loss'].device
         if embeds is not None:
-            diff_loss = orthogonal_loss_matrix(embeds['img_embeds1'], embeds['img_embeds2']) 
+            diff_loss = self.loss_diff(embeds['img_embeds1'], embeds['img_embeds2']) 
             # diff_loss += self.loss_diff(embeds['img_embeds2'], embeds['text_embeds'])
             # sim_loss = self.loss_sim(embeds['img_embeds2'], embeds['text_embeds'], 5)
             outputs['loss'] += self.config.diff_loss_coef * diff_loss.to(device)

@@ -57,15 +57,18 @@ class DiffLoss(nn.Module):
         print('Input1 shape: ', input1.shape)
         print('Input2 shape : ', input2.shape)
 
-        batch_size = input1.size(0)
-        input1 = input1.view(batch_size, -1)
-        input2 = input2.view(batch_size, -1)
+        batch_size, sq_len, _ = input1.shape
+        input1 = input1.view(batch_size * sq_len, -1)
+        input2 = input2.view(batch_size * sq_len, -1)
 
         # Zero mean
-        input1_mean = torch.mean(input1, dim=0, keepdims=True)
-        input2_mean = torch.mean(input2, dim=0, keepdims=True)
-        input1 = input1 - input1_mean
-        input2 = input2 - input2_mean
+        # input1_mean = torch.mean(input1, dim=0, keepdims=True)
+        # input2_mean = torch.mean(input2, dim=0, keepdims=True)
+        # input1 = input1 - input1_mean
+        # input2 = input2 - input2_mean
+
+        print('Input1 shape: ', input1.shape)
+        print('Input2 shape : ', input2.shape)
 
         input1_l2_norm = torch.norm(input1, p=2, dim=1, keepdim=True).detach()
         input1_l2 = input1.div(input1_l2_norm.expand_as(input1) + 1e-6)
