@@ -28,7 +28,15 @@ from ..llava_arch import LlavaMetaModel, LlavaMetaForCausalLM
 from ..losses import *
 
 
-
+def orthogonal_loss_matrix(inputs1, inputs2):
+    batch_size = input1.size(0)
+    input1 = input1.view(batch_size, -1)
+    input2 = input2.view(batch_size, -1)
+    # Calculate the Gram matrix (similarity matrix) between features
+    gram_matrix = torch.mm(inputs1.T, inputs2)
+    # Compute Frobenius norm of Gram matrix (encourages orthogonality)
+    loss = torch.norm(gram_matrix, p='fro')
+    return loss
 
 class LlavaConfig(LlamaConfig):
     model_type = "llava_llama"

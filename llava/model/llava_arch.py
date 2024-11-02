@@ -360,8 +360,8 @@ class LlavaMetaForCausalLM(ABC):
             new_labels2.append(cur_new_labels2)
 
 
-            img_embeds1.append(cur_new_img_embeds1)
-            img_embeds2.append(cur_new_img_embeds2)
+            img_embeds1.append(cur_new_img_embeds1.mean(dim = 0))
+            img_embeds2.append(cur_new_img_embeds2.mean(dim = 0))
             text_embeds.append(cur_new_text_embeds.mean(dim = 0))
 
 
