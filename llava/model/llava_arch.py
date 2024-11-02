@@ -419,7 +419,6 @@ class LlavaMetaForCausalLM(ABC):
             attention_mask2 = attention_mask2.to(dtype = _attention_mask.dtype) if _attention_mask is not None else None
             position_ids2 = position_ids2 if _position_ids is not None else None
 
-
             embeds  = {
                 'img_embeds1': torch.stack(img_embeds1, dim = 0),
                 'img_embeds2': torch.stack(img_embeds2, dim = 0),
