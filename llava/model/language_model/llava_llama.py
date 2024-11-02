@@ -115,7 +115,7 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
             diff_loss += self.loss_diff(embeds['img_embeds2'].mean(dim = 1), embeds['text_embeds'])
             # sim_loss = self.loss_sim(embeds['img_embeds2'], embeds['text_embeds'], 5)
             outputs['loss'] += self.config.diff_loss_coef * diff_loss.to(device)
-            print('Diff loss', diff_loss)
+            # print('Diff loss', diff_loss)
         
         return outputs
 
