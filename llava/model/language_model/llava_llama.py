@@ -94,6 +94,15 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
                 image_sizes
             )
         
+        print('==============================Text + Img Features1=========================')
+        print('Input ids: ', input_ids)
+        print('Position_ids: ', position_ids)
+        print('Attention mask: ', attention_mask)
+        print('Past key values: ', past_key_values)
+        print('Labels: ',labels)
+        print('Input embeds shape: ', inputs_embeds.shape)
+
+        
 
         outputs =  super().forward(
             input_ids=input_ids,
