@@ -1246,8 +1246,16 @@ def train(attn_implementation=None):
         trainer.train(resume_from_checkpoint=True)
     else:
         trainer.train()
-    trainer.save_state()
 
+    rank0_print('*'*100)
+    if training_args.local_rank == 0 or training_args.local_rank == -1:
+        rank0_print('inside save state')
+        trainer.save_state()
+    
+    rank0_print('save state completed')
+    rank0_print('*'*100)
+    torch.distributed.barrier()
+    
     model.config.use_cache = True
 
     if training_args.lora_enable:
