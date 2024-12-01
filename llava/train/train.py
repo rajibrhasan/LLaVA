@@ -120,8 +120,9 @@ class TrainingArguments(transformers.TrainingArguments):
     llm_pad_token: str = field(default=None)
 
     # override default timeout limit of pytorch ddp
-    # this was included as model checkpoint saving was taking more time than default timeframe
-    ddp_timeout: int = 6000
+    # this was included as model checkpoint saving was taking more time than default timeout time
+    # documentation: https://pytorch.org/docs/stable/distributed.html#torch.distributed.init_process_group#timeout
+    ddp_timeout: int = 6000 # 6000s = 100 minutes
 
 def maybe_zero_3(param, ignore_status=False, name=None):
     from deepspeed import zero
