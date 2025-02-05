@@ -1,28 +1,38 @@
 #!/bin/bash
 
-# main set
-images_path=playground/data
-data_train_path=playground/data/llava_v1_5_mix625k.json
+source activate more
+cd local/path
+
+export PYTHONPATH=.
+export WANDB_ENTITYproject_entity
+export WANDB_PROJECT=project_name
+export WANDB_MODE=offline
+export TOKENIZER_PATH=lmsys/vicuna-7b-v1.5
+
+IFS=',' read -r -a nodelist <<<$SLURM_NODELIST
+export MASTER_ADDR=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)
+export MASTER_PORT=`comm -23 <(seq 5000 6000 | sort) <(ss -Htan | awk '{print $4}' | cut -d':' -f2 | sort -u) | shuf | head -n 1`
+export OMP_NUM_THREADS=1
+
+echo "CPUs: $SLURM_CPUS_PER_TASK"
+echo "GPUs: $SLURM_GPUS_PER_NODE"
+echo "MASTER ADDR: ${MASTER_ADDR}"
+echo "MASTER PORT: ${MASTER_PORT}"
 
 epochs=1
-llama3_path=meta-llama/Meta-Llama-3.1-8B-Instruct
-vicuna=lmsys/vicuna-7b-v1.5
-images_path=../../MoE/playground/data
-data_train_path=../../MoE/playground/data/llava_v1_5_mix625k.json
-vision_tower=openai/clip-vit-large-patch14-336
-mm_projector_path=ckpts/llava-llama-pretrain/mm_projector.bin
+vicuna_path=local/path
+images_path=local/path
+data_train_path=local/path
+vision_tower=local/path
+mm_projector_path=local/path/mm_projector.bin
 
-job_name="llava-llama-finetune-v2"
+job_name="your/job/name"
 echo "job name: $job_name"
 
-PORT=$((29500 + SLURM_JOB_ID % 1000))
-
-deepspeed --master_port $PORT llava/train/train_mem.py \
+deepspeed llava/train/train_mem.py \
 --deepspeed ./scripts/zero3.json \
---model_name_or_path $llama3_path \
---llm_backbone llama_3_1 \
---llm_pad_token pad \
---version llama_3_1 \
+--model_name_or_path $vicuna_path \
+--version v1 \
 --data_path $data_train_path \
 --image_folder $images_path \
 --vision_tower $vision_tower \
@@ -34,7 +44,7 @@ deepspeed --master_port $PORT llava/train/train_mem.py \
 --image_aspect_ratio pad \
 --group_by_modality_length True \
 --bf16 True \
---output_dir ./checkpoints/test/${job_name} \
+--output_dir ./checkpoints/${job_name} \
 --num_train_epochs $epochs \
 --per_device_train_batch_size 16 \
 --per_device_eval_batch_size 4 \
