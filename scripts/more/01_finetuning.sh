@@ -1,30 +1,26 @@
 #!/bin/bash
 
-source activate more
-cd local/path
+export WANDB_PROJECT=Modality_Gap_v2
+export TOKENIZER_PATH=aimagelab/LLaVA_MORE-llama_3_1-8B-finetuning
+export NCCL_P2P_LEVEL=NVL
+export NCCL_DEBUG=INFO
 
 
-IFS=',' read -r -a nodelist <<<$SLURM_NODELIST
-export MASTER_ADDR=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)
-export MASTER_PORT=`comm -23 <(seq 5000 6000 | sort) <(ss -Htan | awk '{print $4}' | cut -d':' -f2 | sort -u) | shuf | head -n 1`
-export OMP_NUM_THREADS=1
-
-echo "CPUs: $SLURM_CPUS_PER_TASK"
-echo "GPUs: $SLURM_GPUS_PER_NODE"
-echo "MASTER ADDR: ${MASTER_ADDR}"
-echo "MASTER PORT: ${MASTER_PORT}"
 
 epochs=1
-vicuna_path=local/path
-images_path=local/path
-data_train_path=local/path
-vision_tower=local/path
-mm_projector_path=local/path/mm_projector.bin
+llama3_path=meta-llama/Meta-Llama-3.1-8B-Instruct
+vicuna=lmsys/vicuna-7b-v1.5
+images_path=../../MoE/playground/data
+data_train_path=../../MoE/playground/data/llava_v1_5_mix625k.json
+vision_tower=openai/clip-vit-large-patch14-336
+mm_projector_path=ckpts/llava-llama-pretrain/mm_projector.bin
 
-job_name="your/job/name"
+job_name="llava-llama-finetune-v2"
 echo "job name: $job_name"
 
-deepspeed llava/train/train_mem.py \
+PORT=$((29500 + SLURM_JOB_ID % 1000))
+
+deepspeed --master_port $PORT llava/train/train_mem.py \
 --deepspeed ./scripts/zero3.json \
 --model_name_or_path $vicuna_path \
 --version v1 \
