@@ -1,13 +1,5 @@
 #!/bin/bash
 
-
-export TORCH_HOME=/scratch/mi8uu/mrm/.cache
-export TRANSFORMERS_CACHE=/scratch/mi8uu/mrm/.cache
-export WANDB_PROJECT=test
-export HF_TOKEN=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
-export WANDB_API_KEY=7a661590c4ceaa4b874c225d0421b9936646d482
-export TRITON_CACHE_DIR=$PWD/.cache
-
 # main set
 images_path=playground/data
 data_train_path=playground/data/llava_v1_5_mix625k.json
