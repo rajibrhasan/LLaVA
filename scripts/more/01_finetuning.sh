@@ -22,8 +22,10 @@ PORT=$((29500 + SLURM_JOB_ID % 1000))
 
 deepspeed --master_port $PORT llava/train/train_mem.py \
 --deepspeed ./scripts/zero3.json \
---model_name_or_path $vicuna_path \
---version v1 \
+--model_name_or_path $llama3_path \
+--llm_backbone llama_3_1 \
+--llm_pad_token pad \
+--version llama_3_1 \
 --data_path $data_train_path \
 --image_folder $images_path \
 --vision_tower $vision_tower \
