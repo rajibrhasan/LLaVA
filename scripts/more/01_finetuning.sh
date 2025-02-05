@@ -3,11 +3,6 @@
 source activate more
 cd local/path
 
-export PYTHONPATH=.
-export WANDB_ENTITYproject_entity
-export WANDB_PROJECT=project_name
-export WANDB_MODE=offline
-export TOKENIZER_PATH=lmsys/vicuna-7b-v1.5
 
 IFS=',' read -r -a nodelist <<<$SLURM_NODELIST
 export MASTER_ADDR=$(scontrol show hostnames "$SLURM_JOB_NODELIST" | head -n 1)
