@@ -108,7 +108,7 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
         )
 
         # add this 
-        if model.config.training:
+        if self.model.config.training:
             device = outputs['loss'].device
             if embeds is not None:
                 diff_loss = self.loss_diff(embeds['img_embeds1'], embeds['img_embeds2']) 
