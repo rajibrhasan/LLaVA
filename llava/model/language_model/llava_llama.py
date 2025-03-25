@@ -107,12 +107,14 @@ class LlavaLlamaForCausalLM(LlamaForCausalLM, LlavaMetaForCausalLM):
             return_dict=return_dict
         )
 
-        device = outputs['loss'].device
-        if embeds is not None:
-            diff_loss = self.loss_diff(embeds['img_embeds1'], embeds['img_embeds2']) 
-            diff_loss += self.loss_diff(embeds['img_embeds2'], embeds['text_embeds'])
-            sim_loss = self.loss_sim(embeds['img_embeds1'], embeds['text_embeds'], 5)
-            outputs['loss'] += self.config.diff_loss_coef * diff_loss.to(device)
+        # add this 
+        if model.config.training:
+            device = outputs['loss'].device
+            if embeds is not None:
+                diff_loss = self.loss_diff(embeds['img_embeds1'], embeds['img_embeds2']) 
+                diff_loss += self.loss_diff(embeds['img_embeds2'], embeds['text_embeds'])
+                sim_loss = self.loss_sim(embeds['img_embeds1'], embeds['text_embeds'], 5)
+                outputs['loss'] += self.config.diff_loss_coef * diff_loss.to(device)
         return outputs
 
     @torch.no_grad()

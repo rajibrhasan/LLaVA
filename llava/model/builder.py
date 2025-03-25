@@ -130,6 +130,9 @@ def load_pretrained_model(model_path, model_base, model_name, load_8bit=False, l
                     low_cpu_mem_usage=True,
                     **kwargs
                 )
+                
+                # for inference
+                model.config.training = False
     else:
         # Load language model
         if model_base is not None:
